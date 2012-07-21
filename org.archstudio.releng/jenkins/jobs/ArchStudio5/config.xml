@@ -33,6 +33,9 @@
     <ignoreNotifyCommit>false</ignoreNotifyCommit>
     <buildChooser class="hudson.plugins.git.util.DefaultBuildChooser"/>
     <gitTool>Default</gitTool>
+    <browser class="hudson.plugins.git.browser.GitWeb">
+      <url>https://github.com/sahendrickson/ArchStudio.git</url>
+    </browser>
     <submoduleCfg class="list"/>
     <relativeTargetDir>repos</relativeTargetDir>
     <reference></reference>
@@ -49,6 +52,9 @@
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers class="vector">
+    <com.cloudbees.jenkins.GitHubPushTrigger>
+      <spec></spec>
+    </com.cloudbees.jenkins.GitHubPushTrigger>
     <hudson.triggers.SCMTrigger>
       <spec>* * * * *</spec>
     </hudson.triggers.SCMTrigger>
@@ -60,40 +66,47 @@
       <values>
         <string>3.7</string>
         <string>4.2</string>
+        <string>4.3</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
   <builders>
     <hudson.tasks.Ant>
-      <targets>clean
+      <targets> -Ddir=&quot;${WORKSPACE}&quot;
+ -Ddelete=**/*
+ -Dretain=repos/**/*,director*,director*/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*
+clean
+ -Declipse.version=4.2
 install-buckminster
-resolvebuildupdate</targets>
+ -Dlocal.repos=&quot;${WORKSPACE}/repos&quot;
+ -Dbuckminster.component=org.archstudio.buckminster.p2
+resolve-cquery
+build-update-site
+ -Dupdate.site.feature=org.archstudio.buckminster.feature
+update-buckminster
+</targets>
       <antName>Ant 1.8</antName>
       <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
-      <properties>dir=&quot;${WORKSPACE}&quot;
-delete=**/*
-retain=repos/**/*,director*,director*/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*
-eclipse.version=4.2
-local.repos=&quot;${WORKSPACE}/repos&quot;
-buckminster.component=org.archstudio.buckminster.p2
-update.site.feature=org.archstudio.buckminster.feature</properties>
     </hudson.tasks.Ant>
     <hudson.tasks.Ant>
-      <targets>clean
+      <targets> -Ddir=&quot;${WORKSPACE}&quot;
+ -Ddelete=**/*
+ -Dretain=repos/**/*,director*,director*/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*,buckminster/**/*
+clean
+ -Declipse.version=${eclipse_version}
+ -Dlocal.repos=&quot;${WORKSPACE}/repos&quot;
+ -Dbuckminster.component=org.archstudio.p2
 resolve-cquery
-build-update-site</targets>
+ -Dsite.pack200=true
+build-update-site
+ -Demma.launch=/org.archstudio.tests/res/eclipse/AllTests.launch
+perform-test</targets>
       <antName>Ant 1.8</antName>
       <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
-      <properties>dir=&quot;${WORKSPACE}&quot;
-delete=**/*
-retain=repos/**/*,director*,director*/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*,buckminster/**/*
-eclipse.version=${eclipse_version}
-local.repos=&quot;${WORKSPACE}/repos&quot;
-buckminster.component=org.archstudio.p2
-site.pack200=true</properties>
     </hudson.tasks.Ant>
     <hudson.tasks.Shell>
-      <command>rsync -rv --delete-after --delay-updates ${WORKSPACE}/org.archstudio.p2/ /var/www/p2/as5/${eclipse_version}</command>
+      <command>mkdir -p /var/www/p2/as5/${eclipse_version}
+rsync -rv --delete-after --delay-updates ${WORKSPACE}/org.archstudio.p2/ /var/www/p2/as5/${eclipse_version}</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
@@ -125,6 +138,34 @@ site.pack200=true</properties>
         </hudson.plugins.warnings.ConsoleParser>
       </consoleParsers>
     </hudson.plugins.warnings.WarningsPublisher>
+    <hudson.plugins.tasks.TasksPublisher>
+      <healthy></healthy>
+      <unHealthy></unHealthy>
+      <thresholdLimit>low</thresholdLimit>
+      <pluginName>[TASKS] </pluginName>
+      <defaultEncoding></defaultEncoding>
+      <canRunOnFailed>false</canRunOnFailed>
+      <useDeltaValues>false</useDeltaValues>
+      <thresholds>
+        <unstableTotalAll></unstableTotalAll>
+        <unstableTotalHigh></unstableTotalHigh>
+        <unstableTotalNormal></unstableTotalNormal>
+        <unstableTotalLow></unstableTotalLow>
+        <failedTotalAll></failedTotalAll>
+        <failedTotalHigh></failedTotalHigh>
+        <failedTotalNormal></failedTotalNormal>
+        <failedTotalLow></failedTotalLow>
+      </thresholds>
+      <shouldDetectModules>false</shouldDetectModules>
+      <dontComputeNew>true</dontComputeNew>
+      <doNotResolveRelativePaths>false</doNotResolveRelativePaths>
+      <high></high>
+      <normal>FIXME</normal>
+      <low>TODO, XXX</low>
+      <ignoreCase>false</ignoreCase>
+      <pattern>**/*.java</pattern>
+      <excludePattern></excludePattern>
+    </hudson.plugins.tasks.TasksPublisher>
     <hudson.plugins.analysis.collector.AnalysisPublisher>
       <healthy></healthy>
       <unHealthy></unHealthy>
@@ -153,14 +194,26 @@ site.pack200=true</properties>
       <isOpenTasksDeactivated>true</isOpenTasksDeactivated>
       <isWarningsDeactivated>false</isWarningsDeactivated>
     </hudson.plugins.analysis.collector.AnalysisPublisher>
-    <hudson.tasks.BuildTrigger>
-      <childProjects>ArchStudio.Publish</childProjects>
-      <threshold>
-        <name>SUCCESS</name>
-        <ordinal>0</ordinal>
-        <color>BLUE</color>
-      </threshold>
-    </hudson.tasks.BuildTrigger>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>**/junit_result.xml</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <testDataPublishers/>
+    </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.plugins.emma.EmmaPublisher>
+      <includes>**/coverage_report.xml</includes>
+      <healthReports>
+        <minClass>0</minClass>
+        <maxClass>100</maxClass>
+        <minMethod>0</minMethod>
+        <maxMethod>70</maxMethod>
+        <minBlock>0</minBlock>
+        <maxBlock>80</maxBlock>
+        <minLine>0</minLine>
+        <maxLine>80</maxLine>
+        <minCondition>0</minCondition>
+        <maxCondition>0</maxCondition>
+      </healthReports>
+    </hudson.plugins.emma.EmmaPublisher>
   </publishers>
   <buildWrappers/>
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
