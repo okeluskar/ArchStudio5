@@ -14,7 +14,7 @@
   <axes/>
   <builders>
     <hudson.tasks.Shell>
-      <command>rsync -rv --delete-after --delay-updates /var/www/p2/as5/ sahendrickson@www.archstudio.org:/var/www/p2/</command>
+      <command>rsync -rv --delete-after --delay-updates /var/www/p2/as5/ isr-uci-edu@www.archstudio.org:/var/www/p2/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
