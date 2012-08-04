@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+   <extension
+         point="org.archstudio.dblgen.processedSchema">
+      <Schema
+            file="model/uml-2.4.xsd"
+            nsURI="http://www.archstudio.org/xadl3/schemas/uml-2.4.xsd">
+      </Schema>
+   </extension>
+
+</plugin>

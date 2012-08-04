@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: OMG Modeling Languages
+Bundle-SymbolicName: org.archstudio.xadl3.ml;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: archstudio.org
+Require-Bundle: org.eclipse.emf.ecore,
+ org.eclipse.emf.ecore.xmi,
+ org.archstudio.dblgen
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
