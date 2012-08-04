@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project>
+  <actions/>
+  <description>Extracts ArchStudio 4s website</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>https://svn.ics.uci.edu/isr-projects/www/archstudio/trunk</remote>
+        <local>repos-archstudio</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>https://svn.ics.uci.edu/isr-projects/www/xarchuci/trunk</remote>
+        <local>repos-xarchuci</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <excludedRegions></excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+    <workspaceUpdater class="hudson.scm.subversion.UpdateWithCleanUpdater"/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes/>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>mkdir -p &quot;${JENKINS_HOME}/isr/archstudio-4/www/archstudio&quot;
+rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos-archstudio/archstudio/&quot; &quot;${JENKINS_HOME}/isr/archstudio-4/www/archstudio/&quot; --filter=&quot;- .svn/&quot;
+mkdir -p &quot;${JENKINS_HOME}/isr/archstudio-4/www/xarchuci&quot;
+rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos-xarchuci/xarchuci/&quot; &quot;${JENKINS_HOME}/isr/archstudio-4/www/xarchuci/&quot; --filter=&quot;- .svn/&quot;</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.BuildTrigger>
+      <childProjects>ArchStudio4.Publish</childProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+      </threshold>
+    </hudson.tasks.BuildTrigger>
+  </publishers>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

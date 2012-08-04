@@ -66,7 +66,6 @@
       <values>
         <string>3.7</string>
         <string>4.2</string>
-        <string>4.3</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
@@ -105,8 +104,8 @@ perform-test</targets>
       <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Shell>
-      <command>mkdir -p /var/www/p2/as5/${eclipse_version}
-rsync -rv --delete-after --delay-updates ${WORKSPACE}/org.archstudio.p2/ /var/www/p2/as5/${eclipse_version}</command>
+      <command>mkdir -p &quot;${JENKINS_HOME}/isr/archstudio-5/updatesite-${eclipse_version}&quot;
+rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/org.archstudio.p2/&quot; &quot;${JENKINS_HOME}/isr/archstudio-5/updatesite-${eclipse_version}&quot;</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
@@ -214,6 +213,14 @@ rsync -rv --delete-after --delay-updates ${WORKSPACE}/org.archstudio.p2/ /var/ww
         <maxCondition>0</maxCondition>
       </healthReports>
     </hudson.plugins.emma.EmmaPublisher>
+    <hudson.tasks.BuildTrigger>
+      <childProjects>ArchStudio5.Publish</childProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+      </threshold>
+    </hudson.tasks.BuildTrigger>
   </publishers>
   <buildWrappers/>
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">

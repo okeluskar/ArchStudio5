@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <matrix-project>
   <actions/>
-  <description>Publish ArchStudio update site to archstudio.org</description>
+  <description>Publish the ArchStudio 4 website</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.scm.NullSCM"/>
@@ -14,7 +14,7 @@
   <axes/>
   <builders>
     <hudson.tasks.Shell>
-      <command>rsync -rv --delete-after --delay-updates /var/www/p2/as5/ isr-uci-edu@www.archstudio.org:/var/www/p2/</command>
+      <command>rsync -rv --delete-after --delay-updates &quot;${JENKINS_HOME}/isr/archstudio-4/&quot; isr@igor.ics.uci.edu:/home/isr/public_html/projects/archstudio-4/</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
