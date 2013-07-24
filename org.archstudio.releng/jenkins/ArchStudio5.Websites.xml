@@ -3,12 +3,8 @@
   <actions/>
   <description>Extracts ArchStudio&apos;s websites</description>
   <keepDependencies>false</keepDependencies>
-  <properties>
-    <com.coravy.hudson.plugins.github.GithubProjectProperty>
-      <projectUrl>https://github.com/isr-uci-edu/ArchStudio/</projectUrl>
-    </com.coravy.hudson.plugins.github.GithubProjectProperty>
-  </properties>
-  <scm class="hudson.plugins.git.GitSCM">
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@1.1.26">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -19,7 +15,7 @@
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
-        <name>**</name>
+        <name>master</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <disableSubmodules>false</disableSubmodules>
@@ -31,6 +27,7 @@
     <pruneBranches>false</pruneBranches>
     <remotePoll>false</remotePoll>
     <ignoreNotifyCommit>false</ignoreNotifyCommit>
+    <useShallowClone>false</useShallowClone>
     <buildChooser class="hudson.plugins.git.util.DefaultBuildChooser"/>
     <gitTool>Default</gitTool>
     <browser class="hudson.plugins.git.browser.GitWeb">
@@ -52,30 +49,26 @@
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers class="vector">
-    <com.cloudbees.jenkins.GitHubPushTrigger>
-      <spec></spec>
-    </com.cloudbees.jenkins.GitHubPushTrigger>
     <hudson.triggers.SCMTrigger>
-      <spec>* * * * *</spec>
+      <spec>*/3 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
     </hudson.triggers.SCMTrigger>
   </triggers>
   <concurrentBuild>false</concurrentBuild>
   <axes/>
   <builders>
     <hudson.tasks.Shell>
-      <command>mkdir -p &quot;${JENKINS_HOME}/isr/archstudio-5/www&quot;
-rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos/org.archstudio.doc/www/&quot; &quot;${JENKINS_HOME}/isr/archstudio-5/www&quot;</command>
+      <command>i=0; while true; do ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-5/www &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done
+
+i=0; while true; do rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos/org.archstudio.doc/www/&quot; isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/www/ --filter=&quot;- xarchuci/core&quot; --filter=&quot;- xarchuci/ext&quot; &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
-    <hudson.tasks.BuildTrigger>
-      <childProjects>ArchStudio5.Publish</childProjects>
-      <threshold>
-        <name>SUCCESS</name>
-        <ordinal>0</ordinal>
-        <color>BLUE</color>
-      </threshold>
-    </hudson.tasks.BuildTrigger>
+    <hudson.tasks.Mailer plugin="mailer@1.4">
+      <recipients>sahendrickson@gmail.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
   </publishers>
   <buildWrappers/>
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">

@@ -1,18 +1,28 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <matrix-project>
   <actions/>
-  <description>Extracts ArchStudio 4s website</description>
+  <description>Extracts ArchStudio 4&apos;s website</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <scm class="hudson.scm.SubversionSCM">
+  <scm class="hudson.scm.SubversionSCM" plugin="subversion@1.45">
     <locations>
       <hudson.scm.SubversionSCM_-ModuleLocation>
-        <remote>https://svn.ics.uci.edu/isr-projects/www/archstudio/trunk</remote>
+        <remote>https://svn.ics.uci.edu/isr/projects/www/archstudio/trunk</remote>
         <local>repos-archstudio</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
-        <remote>https://svn.ics.uci.edu/isr-projects/www/xarchuci/trunk</remote>
+        <remote>https://svn.ics.uci.edu/isr/projects/www/xarchuci/trunk</remote>
         <local>repos-xarchuci</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>https://svn.ics.uci.edu/isr/projects/xarchlibs4/trunk/edu.uci.isr.xarchlibs/res/schema</remote>
+        <local>repos-xarchlibs-schema</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
       </hudson.scm.SubversionSCM_-ModuleLocation>
     </locations>
     <excludedRegions></excludedRegions>
@@ -21,31 +31,46 @@
     <excludedRevprop></excludedRevprop>
     <excludedCommitMessages></excludedCommitMessages>
     <workspaceUpdater class="hudson.scm.subversion.UpdateWithCleanUpdater"/>
+    <ignoreDirPropChanges>false</ignoreDirPropChanges>
+    <filterChangelog>false</filterChangelog>
   </scm>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <triggers class="vector"/>
+  <triggers class="vector">
+    <hudson.triggers.SCMTrigger>
+      <spec>*/3 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
   <concurrentBuild>false</concurrentBuild>
   <axes/>
   <builders>
     <hudson.tasks.Shell>
-      <command>mkdir -p &quot;${JENKINS_HOME}/isr/archstudio-4/www/archstudio&quot;
-rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos-archstudio/archstudio/&quot; &quot;${JENKINS_HOME}/isr/archstudio-4/www/archstudio/&quot; --filter=&quot;- .svn/&quot;
-mkdir -p &quot;${JENKINS_HOME}/isr/archstudio-4/www/xarchuci&quot;
-rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos-xarchuci/xarchuci/&quot; &quot;${JENKINS_HOME}/isr/archstudio-4/www/xarchuci/&quot; --filter=&quot;- .svn/&quot;</command>
+      <command>i=0; while true; do ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-4/www/archstudio &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done
+
+i=0; while true; do rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos-archstudio/archstudio/&quot; isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-4/www/archstudio/ --filter=&quot;- .svn/&quot; &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done
+
+i=0; while true; do ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-4/www/xarchuci &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done
+
+i=0; while true; do rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos-xarchuci/xarchuci/&quot; isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-4/www/xarchuci/ --filter=&quot;- .svn/&quot; &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done
+
+i=0; while true; do ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/xarchuci/core &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done
+
+i=0; while true; do rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos-xarchlibs-schema/core/&quot; isr@openlab.ics.uci.edu:/home/isr/public_html/projects/xarchuci/core/ --filter=&quot;- .svn/&quot; &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done
+
+i=0; while true; do ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/xarchuci/ext &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done
+
+i=0; while true; do rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/repos-xarchlibs-schema/&quot; isr@openlab.ics.uci.edu:/home/isr/public_html/projects/xarchuci/ext/ --filter=&quot;- .svn/&quot; &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
-    <hudson.tasks.BuildTrigger>
-      <childProjects>ArchStudio4.Publish</childProjects>
-      <threshold>
-        <name>SUCCESS</name>
-        <ordinal>0</ordinal>
-        <color>BLUE</color>
-      </threshold>
-    </hudson.tasks.BuildTrigger>
+    <hudson.tasks.Mailer plugin="mailer@1.4">
+      <recipients>sahendrickson@gmail.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
   </publishers>
   <buildWrappers/>
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">

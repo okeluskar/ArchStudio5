@@ -45,7 +45,7 @@
     <scmName></scmName>
   </scm>
   <canRoam>true</canRoam>
-  <disabled>true</disabled>
+  <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers class="vector">
@@ -59,7 +59,7 @@
     <hudson.matrix.TextAxis>
       <name>eclipse_version</name>
       <values>
-        <string>4.2</string>
+        <string>4.3</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
@@ -81,8 +81,7 @@ install-buckminster
  -Dbuckminster.component=org.archstudio.p2
 resolve-cquery
 build-update-site
- -Demma.launch=/org.archstudio.tests/res/eclipse/AllTests.launch
-perform-test</targets>
+</targets>
       <antName>Ant 1.8</antName>
       <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
@@ -120,11 +119,6 @@ perform-test</targets>
       <isOpenTasksDeactivated>true</isOpenTasksDeactivated>
       <isWarningsDeactivated>true</isWarningsDeactivated>
     </hudson.plugins.analysis.collector.AnalysisPublisher>
-    <hudson.tasks.junit.JUnitResultArchiver>
-      <testResults>**/junit_result.xml</testResults>
-      <keepLongStdio>false</keepLongStdio>
-      <testDataPublishers/>
-    </hudson.tasks.junit.JUnitResultArchiver>
     <hudson.tasks.Mailer plugin="mailer@1.4">
       <recipients>sahendrickson@gmail.com</recipients>
       <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>

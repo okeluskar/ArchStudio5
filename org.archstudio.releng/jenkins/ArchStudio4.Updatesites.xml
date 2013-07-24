@@ -4,30 +4,30 @@
   <description>Builds ArchStudio 4 and its constituent features</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <scm class="hudson.scm.SubversionSCM">
+  <scm class="hudson.scm.SubversionSCM" plugin="subversion@1.44">
     <locations>
       <hudson.scm.SubversionSCM_-ModuleLocation>
-        <remote>https://svn.ics.uci.edu/isr-projects/archstudio4/trunk</remote>
-        <local>repos</local>
+        <remote>https://svn.ics.uci.edu/isr/projects/archstudio4/trunk</remote>
+        <local>repos-as4</local>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
-        <remote>https://svn.ics.uci.edu/isr-projects/apigen/trunk</remote>
+        <remote>https://svn.ics.uci.edu/isr/projects/apigen/trunk</remote>
         <local>repos-apigen</local>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
-        <remote>https://svn.ics.uci.edu/isr-projects/bna4/trunk</remote>
+        <remote>https://svn.ics.uci.edu/isr/projects/bna4/trunk</remote>
         <local>repos-bna4</local>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
-        <remote>https://svn.ics.uci.edu/isr-projects/myxfw/trunk</remote>
+        <remote>https://svn.ics.uci.edu/isr/projects/myxfw/trunk</remote>
         <local>repos-myxfw</local>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
-        <remote>https://svn.ics.uci.edu/isr-projects/utils/trunk</remote>
+        <remote>https://svn.ics.uci.edu/isr/projects/utils/trunk</remote>
         <local>repos-utils</local>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
-        <remote>https://svn.ics.uci.edu/isr-projects/xarchlibs4/trunk</remote>
+        <remote>https://svn.ics.uci.edu/isr/projects/xarchlibs4/trunk</remote>
         <local>repos-xarchlibs4</local>
       </hudson.scm.SubversionSCM_-ModuleLocation>
     </locations>
@@ -37,6 +37,7 @@
     <excludedRevprop></excludedRevprop>
     <excludedCommitMessages></excludedCommitMessages>
     <workspaceUpdater class="hudson.scm.subversion.UpdateWithCleanUpdater"/>
+    <ignoreDirPropChanges>false</ignoreDirPropChanges>
   </scm>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
@@ -44,7 +45,8 @@
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers class="vector">
     <hudson.triggers.SCMTrigger>
-      <spec>* * * * *</spec>
+      <spec>*/3 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
     </hudson.triggers.SCMTrigger>
   </triggers>
   <concurrentBuild>false</concurrentBuild>
@@ -58,24 +60,29 @@
     </hudson.matrix.TextAxis>
   </axes>
   <builders>
-    <hudson.tasks.Ant>
+    <hudson.tasks.Shell>
+      <command>mkdir -p repos
+cp -arf repos-*/* repos</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Ant plugin="ant@1.1">
       <targets> -Ddir=&quot;${WORKSPACE}&quot;
  -Ddelete=**/*
- -Dretain=repos*/**/*,director*,director*/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*
+ -Dretain=repos*/**/*,buckminster/**/*,director*,director*/**/*,.buckminster/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*,.metadata/.plugins/org.eclipse.buckminster.core/**/*
 clean
  -Declipse.version=4.2
 install-buckminster
- -Dlocal.repos=&quot;${WORKSPACE}/repos&quot;</targets>
+</targets>
       <antName>Ant 1.8</antName>
       <buildFile>repos/edu.uci.isr.archstudio4.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
-    <hudson.tasks.Ant>
+    <hudson.tasks.Ant plugin="ant@1.1">
       <targets> -Ddir=&quot;${WORKSPACE}&quot;
  -Ddelete=**/*
- -Dretain=repos*/**/*,director*,director*/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*,buckminster/**/*
+ -Dretain=repos*/**/*,buckminster/**/*,director*,director*/**/*,.buckminster/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*,.metadata/.plugins/org.eclipse.buckminster.core/**/*
 clean
  -Declipse.version=${eclipse_version}
  -Dbuckminster.component=edu.uci.isr.archstudio4.updatesite.feature
+ -Dlocal.repos=&quot;${WORKSPACE}/repos&quot;
 resolve-cquery
  -Dsite.pack200=true
 build-update-site
@@ -84,48 +91,20 @@ build-update-site
       <buildFile>repos/edu.uci.isr.archstudio4.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Shell>
-      <command>mkdir -p &quot;${JENKINS_HOME}/isr/archstudio-4/updatesite-${eclipse_version}&quot;
-rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/edu.uci.isr.archstudio4.updatesite.feature/&quot; &quot;${JENKINS_HOME}/isr/archstudio-4/updatesite-${eclipse_version}&quot;</command>
+      <command>i=0; while true; do rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/edu.uci.isr.archstudio4.updatesite.feature/&quot; isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-4/updatesite-${eclipse_version} &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
-    <hudson.plugins.tasks.TasksPublisher>
-      <healthy></healthy>
-      <unHealthy></unHealthy>
-      <thresholdLimit>low</thresholdLimit>
-      <pluginName>[TASKS] </pluginName>
-      <defaultEncoding></defaultEncoding>
-      <canRunOnFailed>false</canRunOnFailed>
-      <useDeltaValues>false</useDeltaValues>
-      <thresholds>
-        <unstableTotalAll></unstableTotalAll>
-        <unstableTotalHigh></unstableTotalHigh>
-        <unstableTotalNormal></unstableTotalNormal>
-        <unstableTotalLow></unstableTotalLow>
-        <failedTotalAll></failedTotalAll>
-        <failedTotalHigh></failedTotalHigh>
-        <failedTotalNormal></failedTotalNormal>
-        <failedTotalLow></failedTotalLow>
-      </thresholds>
-      <shouldDetectModules>false</shouldDetectModules>
-      <dontComputeNew>true</dontComputeNew>
-      <doNotResolveRelativePaths>false</doNotResolveRelativePaths>
-      <high></high>
-      <normal>FIXME</normal>
-      <low>TODO, XXX</low>
-      <ignoreCase>false</ignoreCase>
-      <pattern>**/*.java</pattern>
-      <excludePattern></excludePattern>
-    </hudson.plugins.tasks.TasksPublisher>
-    <hudson.plugins.analysis.collector.AnalysisPublisher>
+    <hudson.plugins.analysis.collector.AnalysisPublisher plugin="analysis-collector@1.34">
       <healthy></healthy>
       <unHealthy></unHealthy>
       <thresholdLimit>low</thresholdLimit>
       <pluginName>[ANALYSIS-COLLECTOR] </pluginName>
       <defaultEncoding></defaultEncoding>
       <canRunOnFailed>true</canRunOnFailed>
+      <useStableBuildAsReference>false</useStableBuildAsReference>
       <useDeltaValues>false</useDeltaValues>
-      <thresholds>
+      <thresholds plugin="analysis-core@1.48">
         <unstableTotalAll></unstableTotalAll>
         <unstableTotalHigh></unstableTotalHigh>
         <unstableTotalNormal></unstableTotalNormal>
@@ -137,22 +116,19 @@ rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/edu.uci.isr.archstud
       </thresholds>
       <shouldDetectModules>false</shouldDetectModules>
       <dontComputeNew>true</dontComputeNew>
-      <doNotResolveRelativePaths>false</doNotResolveRelativePaths>
+      <doNotResolveRelativePaths>true</doNotResolveRelativePaths>
       <isCheckStyleDeactivated>true</isCheckStyleDeactivated>
       <isDryDeactivated>true</isDryDeactivated>
       <isFindBugsDeactivated>true</isFindBugsDeactivated>
       <isPmdDeactivated>true</isPmdDeactivated>
       <isOpenTasksDeactivated>true</isOpenTasksDeactivated>
-      <isWarningsDeactivated>false</isWarningsDeactivated>
+      <isWarningsDeactivated>true</isWarningsDeactivated>
     </hudson.plugins.analysis.collector.AnalysisPublisher>
-    <hudson.tasks.BuildTrigger>
-      <childProjects>ArchStudio4.Publish</childProjects>
-      <threshold>
-        <name>SUCCESS</name>
-        <ordinal>0</ordinal>
-        <color>BLUE</color>
-      </threshold>
-    </hudson.tasks.BuildTrigger>
+    <hudson.tasks.Mailer plugin="mailer@1.4">
+      <recipients>sahendrickson@gmail.com</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
   </publishers>
   <buildWrappers/>
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
