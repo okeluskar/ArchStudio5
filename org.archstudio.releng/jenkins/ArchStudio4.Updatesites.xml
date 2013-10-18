@@ -4,31 +4,43 @@
   <description>Builds ArchStudio 4 and its constituent features</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <scm class="hudson.scm.SubversionSCM" plugin="subversion@1.44">
+  <scm class="hudson.scm.SubversionSCM" plugin="subversion@1.51">
     <locations>
       <hudson.scm.SubversionSCM_-ModuleLocation>
         <remote>https://svn.ics.uci.edu/isr/projects/archstudio4/trunk</remote>
         <local>repos-as4</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
         <remote>https://svn.ics.uci.edu/isr/projects/apigen/trunk</remote>
         <local>repos-apigen</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
         <remote>https://svn.ics.uci.edu/isr/projects/bna4/trunk</remote>
         <local>repos-bna4</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
         <remote>https://svn.ics.uci.edu/isr/projects/myxfw/trunk</remote>
         <local>repos-myxfw</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
         <remote>https://svn.ics.uci.edu/isr/projects/utils/trunk</remote>
         <local>repos-utils</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
       </hudson.scm.SubversionSCM_-ModuleLocation>
       <hudson.scm.SubversionSCM_-ModuleLocation>
         <remote>https://svn.ics.uci.edu/isr/projects/xarchlibs4/trunk</remote>
         <local>repos-xarchlibs4</local>
+        <depthOption>infinity</depthOption>
+        <ignoreExternalsOption>false</ignoreExternalsOption>
       </hudson.scm.SubversionSCM_-ModuleLocation>
     </locations>
     <excludedRegions></excludedRegions>
@@ -38,14 +50,15 @@
     <excludedCommitMessages></excludedCommitMessages>
     <workspaceUpdater class="hudson.scm.subversion.UpdateWithCleanUpdater"/>
     <ignoreDirPropChanges>false</ignoreDirPropChanges>
+    <filterChangelog>false</filterChangelog>
   </scm>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <triggers class="vector">
+  <triggers>
     <hudson.triggers.SCMTrigger>
-      <spec>*/3 * * * *</spec>
+      <spec>H/3 * * * *</spec>
       <ignorePostCommitHooks>false</ignorePostCommitHooks>
     </hudson.triggers.SCMTrigger>
   </triggers>
@@ -64,7 +77,7 @@
       <command>mkdir -p repos
 cp -arf repos-*/* repos</command>
     </hudson.tasks.Shell>
-    <hudson.tasks.Ant plugin="ant@1.1">
+    <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Ddir=&quot;${WORKSPACE}&quot;
  -Ddelete=**/*
  -Dretain=repos*/**/*,buckminster/**/*,director*,director*/**/*,.buckminster/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*,.metadata/.plugins/org.eclipse.buckminster.core/**/*
@@ -75,7 +88,7 @@ install-buckminster
       <antName>Ant 1.8</antName>
       <buildFile>repos/edu.uci.isr.archstudio4.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
-    <hudson.tasks.Ant plugin="ant@1.1">
+    <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Ddir=&quot;${WORKSPACE}&quot;
  -Ddelete=**/*
  -Dretain=repos*/**/*,buckminster/**/*,director*,director*/**/*,.buckminster/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*,.metadata/.plugins/org.eclipse.buckminster.core/**/*
@@ -95,7 +108,7 @@ build-update-site
     </hudson.tasks.Shell>
   </builders>
   <publishers>
-    <hudson.plugins.analysis.collector.AnalysisPublisher plugin="analysis-collector@1.34">
+    <hudson.plugins.analysis.collector.AnalysisPublisher plugin="analysis-collector@1.38">
       <healthy></healthy>
       <unHealthy></unHealthy>
       <thresholdLimit>low</thresholdLimit>
@@ -104,7 +117,7 @@ build-update-site
       <canRunOnFailed>true</canRunOnFailed>
       <useStableBuildAsReference>false</useStableBuildAsReference>
       <useDeltaValues>false</useDeltaValues>
-      <thresholds plugin="analysis-core@1.48">
+      <thresholds plugin="analysis-core@1.54">
         <unstableTotalAll></unstableTotalAll>
         <unstableTotalHigh></unstableTotalHigh>
         <unstableTotalNormal></unstableTotalNormal>
@@ -124,7 +137,7 @@ build-update-site
       <isOpenTasksDeactivated>true</isOpenTasksDeactivated>
       <isWarningsDeactivated>true</isWarningsDeactivated>
     </hudson.plugins.analysis.collector.AnalysisPublisher>
-    <hudson.tasks.Mailer plugin="mailer@1.4">
+    <hudson.tasks.Mailer plugin="mailer@1.5">
       <recipients>sahendrickson@gmail.com</recipients>
       <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
       <sendToIndividuals>false</sendToIndividuals>
