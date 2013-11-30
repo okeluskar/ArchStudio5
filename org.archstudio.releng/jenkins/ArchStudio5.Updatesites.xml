@@ -1,15 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <matrix-project>
   <actions/>
-  <description>Builds ArchStudio 5 and its constituent features</description>
+  <description>Build and publish ArchStudio&apos;s update site</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@1.5.0">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.0">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <name></name>
-        <refspec></refspec>
         <url>https://github.com/isr-uci-edu/ArchStudio5.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
@@ -18,28 +16,14 @@
         <name>master</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
-    <disableSubmodules>false</disableSubmodules>
-    <recursiveSubmodules>false</recursiveSubmodules>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
-    <authorOrCommitter>false</authorOrCommitter>
-    <clean>false</clean>
-    <wipeOutWorkspace>false</wipeOutWorkspace>
-    <pruneBranches>false</pruneBranches>
-    <remotePoll>false</remotePoll>
-    <ignoreNotifyCommit>false</ignoreNotifyCommit>
-    <useShallowClone>false</useShallowClone>
-    <buildChooser class="hudson.plugins.git.util.DefaultBuildChooser"/>
-    <gitTool>Default</gitTool>
     <submoduleCfg class="list"/>
-    <relativeTargetDir>repos</relativeTargetDir>
-    <reference></reference>
-    <excludedRegions></excludedRegions>
-    <excludedUsers></excludedUsers>
-    <gitConfigName></gitConfigName>
-    <gitConfigEmail></gitConfigEmail>
-    <skipTag>true</skipTag>
-    <includedRegions></includedRegions>
-    <scmName></scmName>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+        <relativeTargetDir>repos</relativeTargetDir>
+      </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+      <hudson.plugins.git.extensions.impl.PerBuildTag/>
+    </extensions>
   </scm>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
@@ -64,12 +48,12 @@
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Ddir=&quot;${WORKSPACE}&quot;
  -Ddelete=**/*
- -Dretain=repos/**/*,buckminster/**/*,director*,director*/**/*,.buckminster/**/*,.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/**/*,.metadata/.plugins/org.eclipse.buckminster.core/**/*
+ -Dretain=repos/**/*,buckminster/**/*,director*,director/**/*
 clean
  -Declipse.version=4.3
 install-buckminster
 </targets>
-      <antName>Ant 1.8</antName>
+      <antName>1.9</antName>
       <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Ant plugin="ant@1.2">
@@ -80,11 +64,19 @@ resolve-cquery
 build-update-site
  -Demma.launch=/org.archstudio.tests/res/eclipse/AllTests.launch
 perform-test</targets>
-      <antName>Ant 1.8</antName>
+      <antName>1.9</antName>
       <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Shell>
-      <command>i=0; while true; do rsync -rv --delete-after --delay-updates &quot;${WORKSPACE}/org.archstudio.p2/&quot; isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/updatesite-${eclipse_version} &amp;&amp; break || i=$(($i+1)) &amp;&amp; [ $i -lt 5 ] || exit 1; done</command>
+      <command>#!/bin/bash -ex
+for retries in {5..0}; do
+  [ $retries -eq 0 ] &amp;&amp; exit 1
+  ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-5/updatesite-${eclipse_version} || continue
+  rsync -rv --delete-after --delay-updates \
+      &quot;${WORKSPACE}/org.archstudio.p2/&quot; \
+      isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/updatesite-${eclipse_version} || continue
+  break
+done</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
