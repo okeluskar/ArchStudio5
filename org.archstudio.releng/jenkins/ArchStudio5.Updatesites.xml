@@ -58,9 +58,14 @@ install-buckminster
     </hudson.tasks.Ant>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Declipse.version=${eclipse_version}
- -Dlocal.repos=&quot;${WORKSPACE}/repos&quot;
- -Dbuckminster.component=org.archstudio.p2
+ -Dbuckminster.component=org.archstudio.p2.build
 resolve-cquery
+</targets>
+      <antName>1.9</antName>
+      <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
+    </hudson.tasks.Ant>
+    <hudson.tasks.Ant plugin="ant@1.2">
+      <targets> -Dbuckminster.component=org.archstudio.p2
 build-update-site
  -Demma.launch=/org.archstudio.tests/res/eclipse/AllTests.launch
 perform-test</targets>
@@ -114,7 +119,7 @@ done</command>
       <keepLongStdio>false</keepLongStdio>
       <testDataPublishers/>
     </hudson.tasks.junit.JUnitResultArchiver>
-    <hudson.tasks.Mailer plugin="mailer@1.5">
+    <hudson.tasks.Mailer plugin="mailer@1.6">
       <recipients>sahendrickson@gmail.com</recipients>
       <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
       <sendToIndividuals>false</sendToIndividuals>
