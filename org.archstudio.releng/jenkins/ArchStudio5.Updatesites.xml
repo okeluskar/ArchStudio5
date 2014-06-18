@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<matrix-project>
+<matrix-project plugin="matrix-project@1.2">
   <actions/>
   <description>Build and publish ArchStudio&apos;s update site</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.0">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.1">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -20,9 +20,8 @@
     <submoduleCfg class="list"/>
     <extensions>
       <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
-        <relativeTargetDir>repos</relativeTargetDir>
+        <relativeTargetDir>${git_clone_dir}/ArchStudio5</relativeTargetDir>
       </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
-      <hudson.plugins.git.extensions.impl.PerBuildTag/>
     </extensions>
   </scm>
   <canRoam>true</canRoam>
@@ -48,29 +47,28 @@
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Ddir=&quot;${WORKSPACE}&quot;
  -Ddelete=**/*
- -Dretain=repos/**/*,buckminster/**/*,director*,director/**/*
+ -Dretain=buckminster/**/*,director*,director/**/*
 clean
  -Declipse.version=4.3
-install-buckminster
-</targets>
-      <antName>1.9</antName>
-      <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
+install-buckminster-full</targets>
+      <antName>ant</antName>
+      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Declipse.version=${eclipse_version}
  -Dbuckminster.component=org.archstudio.p2.build
 resolve-cquery
 </targets>
-      <antName>1.9</antName>
-      <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
+      <antName>ant</antName>
+      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Dbuckminster.component=org.archstudio.p2
 build-update-site
  -Demma.launch=/org.archstudio.tests/res/eclipse/AllTests.launch
 perform-test</targets>
-      <antName>1.9</antName>
-      <buildFile>repos/org.archstudio.releng/build.xml</buildFile>
+      <antName>ant</antName>
+      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Shell>
       <command>#!/bin/bash -ex
@@ -85,7 +83,7 @@ done</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
-    <hudson.plugins.analysis.collector.AnalysisPublisher plugin="analysis-collector@1.38">
+    <hudson.plugins.analysis.collector.AnalysisPublisher plugin="analysis-collector@1.41">
       <healthy></healthy>
       <unHealthy></unHealthy>
       <thresholdLimit>low</thresholdLimit>
@@ -94,7 +92,7 @@ done</command>
       <canRunOnFailed>true</canRunOnFailed>
       <useStableBuildAsReference>false</useStableBuildAsReference>
       <useDeltaValues>false</useDeltaValues>
-      <thresholds plugin="analysis-core@1.54">
+      <thresholds plugin="analysis-core@1.57">
         <unstableTotalAll></unstableTotalAll>
         <unstableTotalHigh></unstableTotalHigh>
         <unstableTotalNormal></unstableTotalNormal>
@@ -119,9 +117,9 @@ done</command>
       <keepLongStdio>false</keepLongStdio>
       <testDataPublishers/>
     </hudson.tasks.junit.JUnitResultArchiver>
-    <hudson.tasks.Mailer plugin="mailer@1.6">
+    <hudson.tasks.Mailer plugin="mailer@1.8">
       <recipients>sahendrickson@gmail.com</recipients>
-      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
       <sendToIndividuals>false</sendToIndividuals>
     </hudson.tasks.Mailer>
   </publishers>

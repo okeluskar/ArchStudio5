@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <matrix-project plugin="matrix-project@1.2">
   <actions/>
-  <description>Publish ArchStudio&apos;s websites</description>
+  <description>Build and publish Buckminster&apos;s update site</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.1">
@@ -13,7 +13,7 @@
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
-        <name>master</name>
+        <name>*/master</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
@@ -28,27 +28,51 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <triggers>
-    <hudson.triggers.SCMTrigger>
-      <spec>H/3 * * * *</spec>
-      <ignorePostCommitHooks>false</ignorePostCommitHooks>
-    </hudson.triggers.SCMTrigger>
-  </triggers>
+  <triggers/>
   <concurrentBuild>false</concurrentBuild>
-  <axes/>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>eclipse_version</name>
+      <values>
+        <string>4.3</string>
+      </values>
+    </hudson.matrix.TextAxis>
+  </axes>
   <builders>
-    <hudson.tasks.Shell>
-      <command>#!/bin/bash -ex
-for retries in {5..0}; do
-  [ $retries -eq 0 ] &amp;&amp; exit 1
-  ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-5/www || continue
-  rsync -rv --delete-after --delay-updates \
-      &quot;${git_clone_dir}/ArchStudio5/org.archstudio.doc/www/&quot; \
-      isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/www/ \
-      --filter=&quot;- xarchuci/core&quot; --filter=&quot;- xarchuci/ext&quot; || continue
-  break
-done</command>
-    </hudson.tasks.Shell>
+    <hudson.tasks.Ant plugin="ant@1.2">
+      <targets> -Ddir=&quot;${WORKSPACE}&quot;
+ -Ddelete=**/*
+ -Dretain=buckminster/**/*,director*,director/**/*
+clean
+ -Declipse.version=4.3
+install-buckminster-eclipse</targets>
+      <antName>ant</antName>
+      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+    </hudson.tasks.Ant>
+    <hudson.tasks.Ant plugin="ant@1.2">
+      <targets> -Declipse.version=${eclipse_version}
+ -Dbuckminster.component=org.archstudio.p2.buckminster
+resolve-cquery
+</targets>
+      <antName>ant</antName>
+      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+    </hudson.tasks.Ant>
+    <hudson.tasks.Ant plugin="ant@1.2">
+      <targets> -Dbuckminster.component=org.archstudio.p2.buckminster
+build-update-site</targets>
+      <antName>ant</antName>
+      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+    </hudson.tasks.Ant>
+    <hudson.tasks.Ant plugin="ant@1.2">
+      <targets> -Ddir=&quot;${WORKSPACE}&quot;
+ -Ddelete=**/*
+ -Dretain=director*,director/**/*,org.archstudio.p2.buckminster/**/*
+clean
+ -Declipse.version=4.3
+install-buckminster-full</targets>
+      <antName>ant</antName>
+      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+    </hudson.tasks.Ant>
   </builders>
   <publishers>
     <hudson.tasks.Mailer plugin="mailer@1.8">
