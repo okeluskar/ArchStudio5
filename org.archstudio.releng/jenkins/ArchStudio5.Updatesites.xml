@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<matrix-project plugin="matrix-project@1.2">
+<matrix-project plugin="matrix-project@1.3">
   <actions/>
   <description>Build and publish ArchStudio&apos;s update site</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.1">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.5">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -20,7 +20,7 @@
     <submoduleCfg class="list"/>
     <extensions>
       <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
-        <relativeTargetDir>${git_clone_dir}/ArchStudio5</relativeTargetDir>
+        <relativeTargetDir>${WORKSPACE}/git/ArchStudio5</relativeTargetDir>
       </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
     </extensions>
   </scm>
@@ -40,44 +40,55 @@
       <name>eclipse_version</name>
       <values>
         <string>4.3</string>
+        <string>4.4</string>
+        <string>4.5</string>
       </values>
     </hudson.matrix.TextAxis>
+    <hudson.matrix.JDKAxis>
+      <name>jdk</name>
+      <values>
+        <string>1.7</string>
+        <string>1.8</string>
+      </values>
+    </hudson.matrix.JDKAxis>
   </axes>
   <builders>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Ddir=&quot;${WORKSPACE}&quot;
  -Ddelete=**/*
- -Dretain=buckminster/**/*,director*,director/**/*
+ -Dretain=git/**/*,director*,director/**/*,buckminster*,buckminster/**/*,.buckminster/tp/**/*
 clean
- -Declipse.version=4.3
+ -Declipse.version=4.4
 install-buckminster-full</targets>
-      <antName>ant</antName>
-      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+      <antName>1.9</antName>
+      <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Declipse.version=${eclipse_version}
  -Dbuckminster.component=org.archstudio.p2.build
+ -Dgit.clone.dir=&quot;${WORKSPACE}/git&quot;
 resolve-cquery
 </targets>
-      <antName>ant</antName>
-      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+      <antName>1.9</antName>
+      <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Dbuckminster.component=org.archstudio.p2
 build-update-site
- -Demma.launch=/org.archstudio.tests/res/eclipse/AllTests.launch
+ -Dlaunch.file=/org.archstudio.tests/res/eclipse/AllTests.launch
 perform-test</targets>
-      <antName>ant</antName>
-      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+      <antName>1.9</antName>
+      <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Shell>
       <command>#!/bin/bash -ex
+[[ &quot;${JOB_NAME}&quot; != *jdk=1.7* ]] &amp;&amp; exit 0
 for retries in {5..0}; do
   [ $retries -eq 0 ] &amp;&amp; exit 1
-  ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-5/updatesite-${eclipse_version} || continue
+  ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-5/${JOB_NAME} || continue
   rsync -rv --delete-after --delay-updates \
       &quot;${WORKSPACE}/org.archstudio.p2/&quot; \
-      isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/updatesite-${eclipse_version} || continue
+      isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/${JOB_NAME} || continue
   break
 done</command>
     </hudson.tasks.Shell>
@@ -92,7 +103,7 @@ done</command>
       <canRunOnFailed>true</canRunOnFailed>
       <useStableBuildAsReference>false</useStableBuildAsReference>
       <useDeltaValues>false</useDeltaValues>
-      <thresholds plugin="analysis-core@1.57">
+      <thresholds plugin="analysis-core@1.58">
         <unstableTotalAll></unstableTotalAll>
         <unstableTotalHigh></unstableTotalHigh>
         <unstableTotalNormal></unstableTotalNormal>
@@ -112,12 +123,13 @@ done</command>
       <isOpenTasksDeactivated>true</isOpenTasksDeactivated>
       <isWarningsDeactivated>true</isWarningsDeactivated>
     </hudson.plugins.analysis.collector.AnalysisPublisher>
-    <hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.tasks.junit.JUnitResultArchiver plugin="junit@1.1">
       <testResults>**/junit_result.xml</testResults>
       <keepLongStdio>false</keepLongStdio>
       <testDataPublishers/>
+      <healthScaleFactor>1.0</healthScaleFactor>
     </hudson.tasks.junit.JUnitResultArchiver>
-    <hudson.tasks.Mailer plugin="mailer@1.8">
+    <hudson.tasks.Mailer plugin="mailer@1.11">
       <recipients>sahendrickson@gmail.com</recipients>
       <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
       <sendToIndividuals>false</sendToIndividuals>

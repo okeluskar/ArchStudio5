@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<matrix-project plugin="matrix-project@1.2">
+<matrix-project plugin="matrix-project@1.3">
   <actions/>
   <description>Publish ArchStudio&apos;s websites</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.1">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.5">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -20,7 +20,7 @@
     <submoduleCfg class="list"/>
     <extensions>
       <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
-        <relativeTargetDir>${git_clone_dir}/ArchStudio5</relativeTargetDir>
+        <relativeTargetDir>$WORKSPACE/git/ArchStudio5</relativeTargetDir>
       </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
     </extensions>
   </scm>
@@ -43,7 +43,7 @@ for retries in {5..0}; do
   [ $retries -eq 0 ] &amp;&amp; exit 1
   ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-5/www || continue
   rsync -rv --delete-after --delay-updates \
-      &quot;${git_clone_dir}/ArchStudio5/org.archstudio.doc/www/&quot; \
+      &quot;${WORKSPACE}/git/ArchStudio5/org.archstudio.doc/www/&quot; \
       isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/www/ \
       --filter=&quot;- xarchuci/core&quot; --filter=&quot;- xarchuci/ext&quot; || continue
   break
@@ -51,7 +51,7 @@ done</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
-    <hudson.tasks.Mailer plugin="mailer@1.8">
+    <hudson.tasks.Mailer plugin="mailer@1.11">
       <recipients>sahendrickson@gmail.com</recipients>
       <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
       <sendToIndividuals>false</sendToIndividuals>

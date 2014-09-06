@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<matrix-project plugin="matrix-project@1.2">
+<matrix-project plugin="matrix-project@1.3">
   <actions/>
   <description>Build and publish Buckminster&apos;s update site</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.1">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.5">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -13,14 +13,14 @@
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
-        <name>*/master</name>
+        <name>master</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
     <submoduleCfg class="list"/>
     <extensions>
       <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
-        <relativeTargetDir>${git_clone_dir}/ArchStudio5</relativeTargetDir>
+        <relativeTargetDir>${WORKSPACE}/git/ArchStudio5</relativeTargetDir>
       </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
     </extensions>
   </scm>
@@ -35,47 +35,46 @@
       <name>eclipse_version</name>
       <values>
         <string>4.3</string>
+        <string>4.4</string>
+        <string>4.5</string>
       </values>
     </hudson.matrix.TextAxis>
+    <hudson.matrix.JDKAxis>
+      <name>jdk</name>
+      <values>
+        <string>1.7</string>
+      </values>
+    </hudson.matrix.JDKAxis>
   </axes>
   <builders>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Ddir=&quot;${WORKSPACE}&quot;
  -Ddelete=**/*
- -Dretain=buckminster/**/*,director*,director/**/*
+ -Dretain=git/**/*,director*,director/**/*,buckminster*,buckminster/**/*,.buckminster/tp/**/*
 clean
- -Declipse.version=4.3
+ -Declipse.version=4.4
 install-buckminster-eclipse</targets>
-      <antName>ant</antName>
-      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+      <antName>(Default)</antName>
+      <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Declipse.version=${eclipse_version}
  -Dbuckminster.component=org.archstudio.p2.buckminster
+ -Dgit.clone.dir=&quot;${WORKSPACE}/git&quot;
 resolve-cquery
 </targets>
-      <antName>ant</antName>
-      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+      <antName>(Default)</antName>
+      <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Dbuckminster.component=org.archstudio.p2.buckminster
 build-update-site</targets>
-      <antName>ant</antName>
-      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
-    </hudson.tasks.Ant>
-    <hudson.tasks.Ant plugin="ant@1.2">
-      <targets> -Ddir=&quot;${WORKSPACE}&quot;
- -Ddelete=**/*
- -Dretain=director*,director/**/*,org.archstudio.p2.buckminster/**/*
-clean
- -Declipse.version=4.3
-install-buckminster-full</targets>
-      <antName>ant</antName>
-      <buildFile>${git_clone_dir}/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+      <antName>(Default)</antName>
+      <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
   </builders>
   <publishers>
-    <hudson.tasks.Mailer plugin="mailer@1.8">
+    <hudson.tasks.Mailer plugin="mailer@1.11">
       <recipients>sahendrickson@gmail.com</recipients>
       <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
       <sendToIndividuals>false</sendToIndividuals>
