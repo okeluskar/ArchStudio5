@@ -59,7 +59,7 @@
  -Dretain=git/**/*,director*,director/**/*,buckminster*,buckminster/**/*,.buckminster/tp/**/*
 clean
  -Declipse.version=4.4
-install-buckminster-full</targets>
+install-buckminster</targets>
       <antName>1.9</antName>
       <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
@@ -83,12 +83,14 @@ perform-test</targets>
     <hudson.tasks.Shell>
       <command>#!/bin/bash -ex
 [[ &quot;${JOB_NAME}&quot; != *jdk=1.7* ]] &amp;&amp; exit 0
+[[ &quot;${JOB_NAME}&quot; != *eclipse_version=4.3* ]] &amp;&amp; exit 0
 for retries in {5..0}; do
   [ $retries -eq 0 ] &amp;&amp; exit 1
   ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-5/${JOB_NAME} || continue
   rsync -rv --delete-after --delay-updates \
       &quot;${WORKSPACE}/org.archstudio.p2/&quot; \
       isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/${JOB_NAME} || continue
+  ssh isr@openlab.ics.uci.edu chmod a+rX -R /home/isr/public_html/projects/archstudio-5 || continue
   break
 done</command>
     </hudson.tasks.Shell>
