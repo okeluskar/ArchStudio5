@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.4">
+  <actions/>
+  <description>Publish ArchStudio</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>10</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.7">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://github.com/isr-uci-edu/ArchStudio5.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+        <relativeTargetDir>$WORKSPACE/git/ArchStudio5</relativeTargetDir>
+      </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>true</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>true</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <jenkins.triggers.ReverseBuildTrigger>
+      <spec></spec>
+      <upstreamProjects>ArchStudio5.20-InstallTest</upstreamProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+        <completeBuild>true</completeBuild>
+      </threshold>
+    </jenkins.triggers.ReverseBuildTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <axes/>
+  <builders>
+    <hudson.tasks.Ant plugin="ant@1.2">
+      <targets> -Ddir=&quot;${WORKSPACE}&quot;
+ -Ddelete=**/*
+ -Dretain=git/**/*
+clean</targets>
+      <antName>(Default)</antName>
+      <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
+    </hudson.tasks.Ant>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.32.1">
+      <project>ArchStudio5.20-InstallTest/eclipse_version=4.3</project>
+      <filter>org.archstudio.p2/**/*</filter>
+      <target></target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.TriggeredBuildSelector">
+        <fallbackToLastSuccessful>true</fallbackToLastSuccessful>
+        <upstreamFilterStrategy>UseGlobalSetting</upstreamFilterStrategy>
+      </selector>
+      <doNotFingerprintArtifacts>true</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash -ex
+
+DIR=/home/isr/public_html/projects/archstudio-5
+
+#Publish website
+for retries in {5..0}; do
+  [ $retries -eq 0 ] &amp;&amp; exit 1
+  ssh isr@openlab.ics.uci.edu mkdir -p $DIR/www || continue
+  rsync -rv --delete-after --delay-updates \
+      &quot;${WORKSPACE}/git/ArchStudio5/org.archstudio.doc/www/&quot; \
+      isr@openlab.ics.uci.edu:$DIR/www/ \
+      --filter=&quot;- xarchuci/core&quot; --filter=&quot;- xarchuci/ext&quot; || continue
+  ssh isr@openlab.ics.uci.edu chmod a+rX -R $DIR || continue
+  break
+done
+
+#Publish update site
+for retries in {5..0}; do
+  [ $retries -eq 0 ] &amp;&amp; exit 1
+  ssh isr@openlab.ics.uci.edu mkdir -p $DIR/updatesite-4.3 || continue
+  rsync -rv --delete-after --delay-updates \
+      &quot;${WORKSPACE}/org.archstudio.p2/&quot; \
+      isr@openlab.ics.uci.edu:$DIR/updatesite-4.3 || continue
+  ssh isr@openlab.ics.uci.edu chmod a+rX -R $DIR || continue
+  break
+done</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.Mailer plugin="mailer@1.11">
+      <recipients>sahendrickson@gmail.com</recipients>
+      <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+  </publishers>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

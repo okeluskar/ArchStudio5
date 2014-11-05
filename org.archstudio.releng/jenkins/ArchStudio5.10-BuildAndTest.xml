@@ -1,9 +1,21 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <matrix-project plugin="matrix-project@1.4">
   <actions/>
-  <description>Build and publish ArchStudio&apos;s update site</description>
+  <description>Build and test ArchStudio using multiple Eclipse releases and Java versions</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>10</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
   <keepDependencies>false</keepDependencies>
-  <properties/>
+  <properties>
+    <hudson.plugins.copyartifact.CopyArtifactPermissionProperty plugin="copyartifact@1.32.1">
+      <projectNameList>
+        <string>ArchStudio5Dev.20-InstallTest</string>
+      </projectNameList>
+    </hudson.plugins.copyartifact.CopyArtifactPermissionProperty>
+  </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.7">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
@@ -26,11 +38,11 @@
   </scm>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
-  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
-  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <blockBuildWhenDownstreamBuilding>true</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>true</blockBuildWhenUpstreamBuilding>
   <triggers>
     <hudson.triggers.SCMTrigger>
-      <spec>H/3 * * * *</spec>
+      <spec>H/5 * * * *</spec>
       <ignorePostCommitHooks>false</ignorePostCommitHooks>
     </hudson.triggers.SCMTrigger>
   </triggers>
@@ -66,6 +78,7 @@ install-buckminster</targets>
     <hudson.tasks.Ant plugin="ant@1.2">
       <targets> -Declipse.version=${eclipse_version}
  -Dbuckminster.component=org.archstudio.p2.build
+ -Dresolve.type=source
  -Dgit.clone.dir=&quot;${WORKSPACE}/git&quot;
 resolve-cquery
 </targets>
@@ -81,20 +94,6 @@ perform-test</targets>
       <antName>1.9</antName>
       <buildFile>${WORKSPACE}/git/ArchStudio5/org.archstudio.releng/build.xml</buildFile>
     </hudson.tasks.Ant>
-    <hudson.tasks.Shell>
-      <command>#!/bin/bash -ex
-[[ &quot;${JOB_NAME}&quot; != *jdk=1.7* ]] &amp;&amp; exit 0
-[[ &quot;${JOB_NAME}&quot; != *eclipse_version=4.3* ]] &amp;&amp; exit 0
-for retries in {5..0}; do
-  [ $retries -eq 0 ] &amp;&amp; exit 1
-  ssh isr@openlab.ics.uci.edu mkdir -p /home/isr/public_html/projects/archstudio-5/${JOB_NAME} || continue
-  rsync -rv --delete-after --delay-updates \
-      &quot;${WORKSPACE}/org.archstudio.p2/&quot; \
-      isr@openlab.ics.uci.edu:/home/isr/public_html/projects/archstudio-5/${JOB_NAME} || continue
-  ssh isr@openlab.ics.uci.edu chmod a+rX -R /home/isr/public_html/projects/archstudio-5 || continue
-  break
-done</command>
-    </hudson.tasks.Shell>
   </builders>
   <publishers>
     <hudson.plugins.analysis.collector.AnalysisPublisher plugin="analysis-collector@1.41">
@@ -106,7 +105,7 @@ done</command>
       <canRunOnFailed>true</canRunOnFailed>
       <useStableBuildAsReference>false</useStableBuildAsReference>
       <useDeltaValues>false</useDeltaValues>
-      <thresholds plugin="analysis-core@1.62">
+      <thresholds plugin="analysis-core@1.64">
         <unstableTotalAll></unstableTotalAll>
         <unstableTotalHigh></unstableTotalHigh>
         <unstableTotalNormal></unstableTotalNormal>
@@ -132,6 +131,13 @@ done</command>
       <testDataPublishers/>
       <healthScaleFactor>1.0</healthScaleFactor>
     </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>org.archstudio.p2/**/*</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>true</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+    </hudson.tasks.ArtifactArchiver>
     <hudson.tasks.Mailer plugin="mailer@1.11">
       <recipients>sahendrickson@gmail.com</recipients>
       <dontNotifyEveryUnstableBuild>true</dontNotifyEveryUnstableBuild>
